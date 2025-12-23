@@ -14,6 +14,12 @@ st.set_page_config(
 # --- CSS ---
 st.markdown("""
 <style>
+    .block-container {
+            padding-top: 1rem;
+            padding-bottom: 0rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
     .metric-box {
         background-color: #f8f9fa;
         border: 1px solid #e9ecef;
@@ -40,11 +46,8 @@ st.markdown("""
 
 # st.title("📡 The Hilbert Transform")
 st.markdown("### 📡 The Hilbert Transform")
-with st.expander("📋 Instructions"):
-    st.markdown(r"""The **Hilbert Transform** is a 90° phase shifter used to create **Analytic Signals** (one-sided spectrum) and enable **Single Sideband (SSB)** modulation.""")
-# st.markdown("""
-# The **Hilbert Transform** is a 90° phase shifter used to create **Analytic Signals** (one-sided spectrum) and enable **Single Sideband (SSB)** modulation.
-# """)
+# with st.expander("📋 Instructions"):
+#     st.markdown(r"""The **Hilbert Transform** is a 90° phase shifter used to create **Analytic Signals** (one-sided spectrum) and enable **Single Sideband (SSB)** modulation.""")
 
 # --- Helper Functions ---
 def design_hilbert_fir(N):
@@ -94,10 +97,11 @@ tab1, tab2, tab3 = st.tabs([
 # ==============================================================================
 with tab1:
     # st.header("1. The Hilbert Filter")
-    st.markdown(r"""
-    The ideal Hilbert Transformer has an impulse response $h[n] = \frac{2}{\pi n}$ for odd $n$ (0 otherwise).
-    It shifts positive frequencies by $-90^\circ$ (multiply by $-j$) and negative frequencies by $+90^\circ$ (multiply by $j$).
-    """)
+    with st.expander("📋 Instructions"):
+        st.markdown(r"""
+        The ideal Hilbert Transformer has an impulse response $h[n] = \frac{2}{\pi n}$ for odd $n$ (0 otherwise).
+        It shifts positive frequencies by $-90^\circ$ (multiply by $-j$) and negative frequencies by $+90^\circ$ (multiply by $j$).
+        """)
     
     # col1, col2 = st.columns([1, 2])
     N_taps = st.slider("Filter Length (N)", 11, 101, 31, step=2, help="Must be Odd for Type III/IV filters")
