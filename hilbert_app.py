@@ -270,13 +270,8 @@ with tab3:
         with col1:
             f_carrier_ssb = st.slider("SSB Carrier (Hz)", 1000, 3000, 2000)
         with col2:
-            sideband = st.selectbox("Select Sideband", ["AM Signal", "Chirp"])
+            sideband = st.selectbox("Select Sideband", ["USB (Upper)", "LSB (Lower)"])
 
-    # with col_s1:
-    #     f_carrier_ssb = st.slider("SSB Carrier (Hz)", 1000, 3000, 2000)
-    #     sideband = st.radio("Select Sideband", ["USB (Upper)", "LSB (Lower)"])
-        
-    # with col_s2:
     # Generate Message Signal (Bandlimited noise/speech proxy)
     np.random.seed(42)
     # Create a signal with 3 distinct tones for clear visualization
@@ -322,13 +317,6 @@ with tab3:
         
     st.pyplot(fig3)
         
-    # st.success(f"""
-    # **Analysis:**
-    # Look at the spectrum. The Carrier is at {f_carrier_ssb} Hz.
-    # * If **USB** is selected, energy appears **only to the right** of the carrier.
-    # * If **LSB** is selected, energy appears **only to the left**.
-    # This confirms the Hilbert Transform successfully suppressed half the spectrum!.
-    # """)
     with st.expander("🔎 Analysis"):
         st.markdown(r"""
         Look at the spectrum. The Carrier is at {f_carrier_ssb} Hz.
