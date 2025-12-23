@@ -38,10 +38,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📡 The Hilbert Transform")
-st.markdown("""
-The **Hilbert Transform** is a 90° phase shifter used to create **Analytic Signals** (one-sided spectrum) and enable **Single Sideband (SSB)** modulation.
-""")
+# st.title("📡 The Hilbert Transform")
+st.markdown("### 📡 The Hilbert Transform")
+with st.expander("📋 Instructions"):
+    st.markdown(r"""The **Hilbert Transform** is a 90° phase shifter used to create **Analytic Signals** (one-sided spectrum) and enable **Single Sideband (SSB)** modulation.""")
+# st.markdown("""
+# The **Hilbert Transform** is a 90° phase shifter used to create **Analytic Signals** (one-sided spectrum) and enable **Single Sideband (SSB)** modulation.
+# """)
 
 # --- Helper Functions ---
 def design_hilbert_fir(N):
@@ -90,64 +93,69 @@ tab1, tab2, tab3 = st.tabs([
 # TAB 1: THE FILTER
 # ==============================================================================
 with tab1:
-    st.header("1. The Hilbert Filter")
+    # st.header("1. The Hilbert Filter")
     st.markdown(r"""
     The ideal Hilbert Transformer has an impulse response $h[n] = \frac{2}{\pi n}$ for odd $n$ (0 otherwise).
     It shifts positive frequencies by $-90^\circ$ (multiply by $-j$) and negative frequencies by $+90^\circ$ (multiply by $j$).
     """)
     
-    col1, col2 = st.columns([1, 2])
+    # col1, col2 = st.columns([1, 2])
+    N_taps = st.slider("Filter Length (N)", 11, 101, 31, step=2, help="Must be Odd for Type III/IV filters")
+    h = design_hilbert_fir(N_taps)
     
-    with col1:
-        st.subheader("Design Parameters")
-        N_taps = st.slider("Filter Length (N)", 11, 101, 31, step=2, help="Must be Odd for Type III/IV filters")
+    # with col1:
+        # st.subheader("Design Parameters")
+        # N_taps = st.slider("Filter Length (N)", 11, 101, 31, step=2, help="Must be Odd for Type III/IV filters")
+        # # Design Filter
+        # h = design_hilbert_fir(N_taps)
         
-        # Design Filter
-        h = design_hilbert_fir(N_taps)
+    # with col2:
+    fig1, ax = plt.subplots(2, 1, figsize=(10, 8))
+    fig1.patch.set_alpha(0)
         
-    with col2:
-        fig1, ax = plt.subplots(2, 1, figsize=(10, 8))
-        fig1.patch.set_alpha(0)
+    # 1. Impulse Response
+    ax[0].stem(np.arange(N_taps), h, basefmt=" ", linefmt='b-', markerfmt='bo')
+    ax[0].set_title(f"Impulse Response (N={N_taps})")
+    ax[0].set_xlabel("Sample n")
+    ax[0].grid(True, alpha=0.3)
         
-        # 1. Impulse Response
-        ax[0].stem(np.arange(N_taps), h, basefmt=" ", linefmt='b-', markerfmt='bo')
-        ax[0].set_title(f"Impulse Response (N={N_taps})")
-        ax[0].set_xlabel("Sample n")
-        ax[0].grid(True, alpha=0.3)
+    # 2. Frequency Response
+    w, H = signal.freqz(h, worN=1024)
+    w_norm = w / np.pi
         
-        # 2. Frequency Response
-        w, H = signal.freqz(h, worN=1024)
-        w_norm = w / np.pi
+    # Plot Magnitude and Phase
+    ax2 = ax[1].twinx()
         
-        # Plot Magnitude and Phase
-        ax2 = ax[1].twinx()
+    ln1 = ax[1].plot(w_norm, 20*np.log10(abs(H)+1e-12), 'b', label='Magnitude (dB)')
+    ln2 = ax2.plot(w_norm, np.angle(H), 'g--', label='Phase (rad)')
         
-        ln1 = ax[1].plot(w_norm, 20*np.log10(abs(H)+1e-12), 'b', label='Magnitude (dB)')
-        ln2 = ax2.plot(w_norm, np.angle(H), 'g--', label='Phase (rad)')
+    ax[1].set_xlabel("Normalized Frequency ($\times \pi$)")
+    ax[1].set_ylabel("Magnitude (dB)", color='b')
+    ax2.set_ylabel("Phase (radians)", color='g')
+    ax[1].set_ylim(-50, 5)
+    ax2.set_ylim(-3.5, 3.5)
+    ax2.set_yticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi])
+    ax2.set_yticklabels([r'$-\pi$', r'$-\pi/2$', '0', r'$\pi/2$', r'$\pi$'])
         
-        ax[1].set_xlabel("Normalized Frequency ($\times \pi$)")
-        ax[1].set_ylabel("Magnitude (dB)", color='b')
-        ax2.set_ylabel("Phase (radians)", color='g')
-        ax[1].set_ylim(-50, 5)
-        ax2.set_ylim(-3.5, 3.5)
-        ax2.set_yticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi])
-        ax2.set_yticklabels([r'$-\pi$', r'$-\pi/2$', '0', r'$\pi/2$', r'$\pi$'])
+    # Add legend
+    lns = ln1 + ln2
+    labs = [l.get_label() for l in lns]
+    ax[1].legend(lns, labs, loc='center right')
         
-        # Add legend
-        lns = ln1 + ln2
-        labs = [l.get_label() for l in lns]
-        ax[1].legend(lns, labs, loc='center right')
+    ax[1].grid(True, alpha=0.3)
+    ax[1].set_title("Frequency Response")
         
-        ax[1].grid(True, alpha=0.3)
-        ax[1].set_title("Frequency Response")
+    st.pyplot(fig1)
         
-        st.pyplot(fig1)
-        
-        st.info("""
-        **Observe:**
-        * **Impulse Response:** It is **Anti-symmetric** (Odd symmetry). This is characteristic of Hilbert transformers.
-        * **Phase:** Notice the phase is approximately $\pi/2$ (or $-\pi/2$ depending on delay) in the passband. The ideal shift is exactly 90 degrees.
-        """)
+    # st.info("""
+    # **Observe:**
+    # * **Impulse Response:** It is **Anti-symmetric** (Odd symmetry). This is characteristic of Hilbert transformers.
+    # * **Phase:** Notice the phase is approximately $\pi/2$ (or $-\pi/2$ depending on delay) in the passband. The ideal shift is exactly 90 degrees.
+    # """)
+    with st.expander("🔍 Observation"):
+        st.markdown(r"""* **Impulse Response:** It is **Anti-symmetric** (Odd symmetry). This is characteristic of Hilbert transformers.
+            * **Phase:** Notice the phase is approximately $\pi/2$ (or $-\pi/2$ depending on delay) in the passband. The ideal shift is exactly 90 degrees.
+            """)
 
 # ==============================================================================
 # TAB 2: ANALYTIC SIGNALS
