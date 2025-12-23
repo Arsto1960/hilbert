@@ -323,11 +323,17 @@ with tab3:
         
     st.pyplot(fig3)
         
-    st.success(f"""
-    **Analysis:**
-    Look at the spectrum. The Carrier is at {f_carrier_ssb} Hz.
-    * If **USB** is selected, energy appears **only to the right** of the carrier.
-    * If **LSB** is selected, energy appears **only to the left**.
-    This confirms the Hilbert Transform successfully suppressed half the spectrum!.
-    """)
-    # st.expander("📋 Instructions"):
+    # st.success(f"""
+    # **Analysis:**
+    # Look at the spectrum. The Carrier is at {f_carrier_ssb} Hz.
+    # * If **USB** is selected, energy appears **only to the right** of the carrier.
+    # * If **LSB** is selected, energy appears **only to the left**.
+    # This confirms the Hilbert Transform successfully suppressed half the spectrum!.
+    # """)
+    st.expander("🔎 Analysis:"):
+        st.markdown(r"""**Analysis:**
+        Look at the spectrum. The Carrier is at {f_carrier_ssb} Hz.
+        * If **USB** is selected, energy appears **only to the right** of the carrier.
+        * If **LSB** is selected, energy appears **only to the left**.
+        This confirms the Hilbert Transform successfully suppressed half the spectrum!.
+        """)
