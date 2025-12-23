@@ -258,70 +258,76 @@ with tab2:
 # TAB 3: SSB MODULATION
 # ==============================================================================
 with tab3:
-    st.header("3. Single Sideband (SSB) Modulation")
-    st.markdown(r"""
-    Standard AM uses double bandwidth. Using the Hilbert Transform, we can cancel one sideband mathematically:
-    * **USB:** $\cos(\omega_c t) m(t) - \sin(\omega_c t) \hat{m}(t)$
-    * **LSB:** $\cos(\omega_c t) m(t) + \sin(\omega_c t) \hat{m}(t)$
-   
-    """)
-    
-    col_s1, col_s2 = st.columns([1, 2])
-    
-    with col_s1:
-        f_carrier_ssb = st.slider("SSB Carrier (Hz)", 1000, 3000, 2000)
-        sideband = st.radio("Select Sideband", ["USB (Upper)", "LSB (Lower)"])
-        
-    with col_s2:
-        # Generate Message Signal (Bandlimited noise/speech proxy)
-        np.random.seed(42)
-        # Create a signal with 3 distinct tones for clear visualization
-        t_ssb = np.linspace(0, 1, 8000)
-        msg = (1.0 * np.sin(2*np.pi*300*t_ssb) + 
-               0.5 * np.sin(2*np.pi*600*t_ssb) + 
-               0.3 * np.sin(2*np.pi*900*t_ssb))
-        
-        # 1. Hilbert Transform of Message
-        msg_analytic = hilbert(msg)
-        msg_hat = np.imag(msg_analytic) # The 90 deg shifted version
-        
-        # 2. Carrier
-        carrier_cos = np.cos(2*np.pi*f_carrier_ssb*t_ssb)
-        carrier_sin = np.sin(2*np.pi*f_carrier_ssb*t_ssb)
-        
-        # 3. SSB Math
-        if sideband == "USB (Upper)":
-            # USB = m*cos - m_hat*sin
-            ssb_sig = msg * carrier_cos - msg_hat * carrier_sin
-            color = 'green'
-        else:
-            # LSB = m*cos + m_hat*sin
-            ssb_sig = msg * carrier_cos + msg_hat * carrier_sin
-            color = 'red'
-            
-        # --- Visualization ---
-        fig3, ax3 = plt.subplots(2, 1, figsize=(10, 8))
-        fig3.patch.set_alpha(0)
-        
-        # Time Domain
-        ax3[0].plot(t_ssb[:200], msg[:200], 'k', label='Message')
-        ax3[0].plot(t_ssb[:200], ssb_sig[:200], color=color, alpha=0.7, label=f'SSB Signal ({sideband})')
-        ax3[0].set_title("Time Domain")
-        ax3[0].legend()
-        
-        # Frequency Domain (Double Sided to show asymmetry)
-        plot_spectrum(ssb_sig, 8000, ax3[1], f"Spectrum of {sideband} Signal", color=color, sides='double')
-        
-        # Mark Carrier
-        ax3[1].axvline(f_carrier_ssb, color='gray', linestyle='--', label='Carrier Freq')
-        ax3[1].legend()
-        
-        st.pyplot(fig3)
-        
-        st.success(f"""
-        **Analysis:**
-        Look at the spectrum. The Carrier is at {f_carrier_ssb} Hz.
-        * If **USB** is selected, energy appears **only to the right** of the carrier.
-        * If **LSB** is selected, energy appears **only to the left**.
-        This confirms the Hilbert Transform successfully suppressed half the spectrum!.
+    # st.header("3. Single Sideband (SSB) Modulation")
+    with st.expander("📋 Instructions"):
+        st.markdown(r"""
+        Standard AM uses double bandwidth. Using the Hilbert Transform, we can cancel one sideband mathematically:
+        * **USB:** $\cos(\omega_c t) m(t) - \sin(\omega_c t) \hat{m}(t)$
+        * **LSB:** $\cos(\omega_c t) m(t) + \sin(\omega_c t) \hat{m}(t)$
         """)
+
+    with st.container(border=True):
+        col1, col2 = st.columns(2)
+        with col1:
+            f_carrier_ssb = st.slider("SSB Carrier (Hz)", 1000, 3000, 2000)
+        with col2:
+            sideband = st.radio("Select Sideband", ["USB (Upper)", "LSB (Lower)"])
+
+    # with col_s1:
+    #     f_carrier_ssb = st.slider("SSB Carrier (Hz)", 1000, 3000, 2000)
+    #     sideband = st.radio("Select Sideband", ["USB (Upper)", "LSB (Lower)"])
+        
+    # with col_s2:
+    # Generate Message Signal (Bandlimited noise/speech proxy)
+    np.random.seed(42)
+    # Create a signal with 3 distinct tones for clear visualization
+    t_ssb = np.linspace(0, 1, 8000)
+    msg = (1.0 * np.sin(2*np.pi*300*t_ssb) + 
+             0.5 * np.sin(2*np.pi*600*t_ssb) + 
+            0.3 * np.sin(2*np.pi*900*t_ssb))
+        
+    # 1. Hilbert Transform of Message
+    msg_analytic = hilbert(msg)
+    msg_hat = np.imag(msg_analytic) # The 90 deg shifted version
+        
+    # 2. Carrier
+    carrier_cos = np.cos(2*np.pi*f_carrier_ssb*t_ssb)
+    carrier_sin = np.sin(2*np.pi*f_carrier_ssb*t_ssb)
+        
+    # 3. SSB Math
+    if sideband == "USB (Upper)":
+        # USB = m*cos - m_hat*sin
+        ssb_sig = msg * carrier_cos - msg_hat * carrier_sin
+        color = 'green'
+    else:
+        # LSB = m*cos + m_hat*sin
+        ssb_sig = msg * carrier_cos + msg_hat * carrier_sin
+        color = 'red'
+            
+    # --- Visualization ---
+    fig3, ax3 = plt.subplots(2, 1, figsize=(10, 8))
+    fig3.patch.set_alpha(0)
+        
+    # Time Domain
+    ax3[0].plot(t_ssb[:200], msg[:200], 'k', label='Message')
+    ax3[0].plot(t_ssb[:200], ssb_sig[:200], color=color, alpha=0.7, label=f'SSB Signal ({sideband})')
+    ax3[0].set_title("Time Domain")
+    ax3[0].legend()
+        
+    # Frequency Domain (Double Sided to show asymmetry)
+    plot_spectrum(ssb_sig, 8000, ax3[1], f"Spectrum of {sideband} Signal", color=color, sides='double')
+        
+    # Mark Carrier
+    ax3[1].axvline(f_carrier_ssb, color='gray', linestyle='--', label='Carrier Freq')
+    ax3[1].legend()
+        
+    st.pyplot(fig3)
+        
+    st.success(f"""
+    **Analysis:**
+    Look at the spectrum. The Carrier is at {f_carrier_ssb} Hz.
+    * If **USB** is selected, energy appears **only to the right** of the carrier.
+    * If **LSB** is selected, energy appears **only to the left**.
+    This confirms the Hilbert Transform successfully suppressed half the spectrum!.
+    """)
+    # st.expander("📋 Instructions"):
