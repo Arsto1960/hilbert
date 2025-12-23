@@ -167,11 +167,11 @@ with tab1:
 with tab2:
     # st.header("2. Analytic Signals & Instantaneous Envelope")
     with st.expander("📋 Instructions"):
-    st.markdown(r"""
-        An **Analytic Signal** $x_a(t)$ is constructed by adding the signal as Real part and its Hilbert Transform as Imaginary part:
-        $$ x_a(t) = x(t) + j \cdot \mathcal{H}\{x(t)\} $$
-        The magnitude $|x_a(t)|$ gives the **Instantaneous Envelope**.
-        """)
+        st.markdown(r"""
+            An **Analytic Signal** $x_a(t)$ is constructed by adding the signal as Real part and its Hilbert Transform as Imaginary part:
+            $$ x_a(t) = x(t) + j \cdot \mathcal{H}\{x(t)\} $$
+            The magnitude $|x_a(t)|$ gives the **Instantaneous Envelope**.
+            """)
     
     # --- Controls (Top Row) ---
     with st.container(border=True):
