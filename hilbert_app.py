@@ -258,7 +258,6 @@ with tab2:
 # TAB 3: SSB MODULATION
 # ==============================================================================
 with tab3:
-    # st.header("3. Single Sideband (SSB) Modulation")
     with st.expander("📋 Instructions"):
         st.markdown(r"""
         Standard AM uses double bandwidth. Using the Hilbert Transform, we can cancel one sideband mathematically:
@@ -271,7 +270,7 @@ with tab3:
         with col1:
             f_carrier_ssb = st.slider("SSB Carrier (Hz)", 1000, 3000, 2000)
         with col2:
-            sideband = st.radio("Select Sideband", ["USB (Upper)", "LSB (Lower)"])
+            sideband = st.selectbox("Select Sideband", ["AM Signal", "Chirp"])
 
     # with col_s1:
     #     f_carrier_ssb = st.slider("SSB Carrier (Hz)", 1000, 3000, 2000)
