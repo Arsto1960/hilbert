@@ -165,74 +165,94 @@ with tab1:
 # TAB 2: ANALYTIC SIGNALS
 # ==============================================================================
 with tab2:
-    st.header("2. Analytic Signals & Instantaneous Envelope")
+    # st.header("2. Analytic Signals & Instantaneous Envelope")
+    with st.expander("📋 Instructions"):
     st.markdown(r"""
-    An **Analytic Signal** $x_a(t)$ is constructed by adding the signal as Real part and its Hilbert Transform as Imaginary part:
-    $$ x_a(t) = x(t) + j \cdot \mathcal{H}\{x(t)\} $$
-    The magnitude $|x_a(t)|$ gives the **Instantaneous Envelope**.
-    """)
+        An **Analytic Signal** $x_a(t)$ is constructed by adding the signal as Real part and its Hilbert Transform as Imaginary part:
+        $$ x_a(t) = x(t) + j \cdot \mathcal{H}\{x(t)\} $$
+        The magnitude $|x_a(t)|$ gives the **Instantaneous Envelope**.
+        """)
     
-    col_a1, col_a2 = st.columns([1, 2])
-    
-    with col_a1:
-        sig_type = st.selectbox("Signal Type", ["AM Signal", "Chirp"])
+    # --- Controls (Top Row) ---
+    with st.container(border=True):
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            sig_type = st.selectbox("Signal Type", ["AM Signal", "Chirp"])
         
+        # Initialize common time vector
         fs = 1000
         duration = 1.0
         t = np.linspace(0, duration, int(fs*duration), endpoint=False)
         
+        # Setup inputs based on type
         if sig_type == "AM Signal":
-            fc = st.slider("Carrier Freq (Hz)", 50, 200, 100)
-            fm = st.slider("Modulation Freq (Hz)", 1, 20, 5)
-            mod_index = st.slider("Modulation Index", 0.0, 1.0, 0.8)
+            with col2:
+                fc = st.slider("Carrier Freq (Hz)", 50, 200, 100)
+            with col3:
+                fm = st.slider("Modulation Freq (Hz)", 1, 20, 5)
+            with col4:
+                mod_index = st.slider("Modulation Index", 0.0, 1.0, 0.8)
             
-            # AM Signal: (1 + m*cos(wm*t)) * cos(wc*t)
+            # Calculate AM Signal (after all inputs are gathered)
             envelope = (1 + mod_index * np.cos(2*np.pi*fm*t))
             sig = envelope * np.cos(2*np.pi*fc*t)
             
         else: # Chirp
-            f_start = st.slider("Start Freq", 10, 50, 20)
-            f_end = st.slider("End Freq", 100, 300, 200)
+            with col2:
+                f_start = st.slider("Start Freq", 10, 50, 20)
+            with col3:
+                f_end = st.slider("End Freq", 100, 300, 200)
+            # col4 is empty for Chirp
+            
+            # Calculate Chirp Signal
             sig = signal.chirp(t, f0=f_start, f1=f_end, t1=duration, method='linear')
             envelope = np.ones_like(sig) # Ideal envelope is 1
-            
-    with col_a2:
-        # Calculate Analytic Signal
-        # Scipy's hilbert() function returns the ANALYTIC signal directly (x + jH(x))
-        analytic_sig = hilbert(sig)
+
+    # --- Processing & Plotting ---
+    
+    # Calculate Analytic Signal
+    analytic_sig = hilbert(sig)
+    
+    extracted_envelope = np.abs(analytic_sig)
+    extracted_phase = np.unwrap(np.angle(analytic_sig))
+    inst_freq = np.diff(extracted_phase) / (2.0*np.pi) * fs
+    
+    # --- Plots ---
+    fig2, ax = plt.subplots(3, 1, figsize=(10, 9))
+    fig2.patch.set_alpha(0)
+    
+    # 1. Time Domain & Envelope
+    ax[0].plot(t, sig, 'k', alpha=0.3, label='Original Signal')
+    ax[0].plot(t, extracted_envelope, 'r--', linewidth=2, label='Extracted Envelope (|x_a|)')
+    if sig_type == "AM Signal":
+        ax[0].plot(t, envelope, 'g:', label='True Envelope')
         
-        extracted_envelope = np.abs(analytic_sig)
-        extracted_phase = np.unwrap(np.angle(analytic_sig))
-        inst_freq = np.diff(extracted_phase) / (2.0*np.pi) * fs
-        
-        # --- Plots ---
-        fig2, ax = plt.subplots(3, 1, figsize=(10, 9))
-        fig2.patch.set_alpha(0)
-        
-        # 1. Time Domain & Envelope
-        ax[0].plot(t, sig, 'k', alpha=0.3, label='Original Signal')
-        ax[0].plot(t, extracted_envelope, 'r--', linewidth=2, label='Extracted Envelope (|x_a|)')
-        if sig_type == "AM Signal":
-            ax[0].plot(t, envelope, 'g:', label='True Envelope')
-            
-        ax[0].set_title("Instantaneous Amplitude extraction")
-        ax[0].legend(loc='upper right')
-        ax[0].set_xlim(0, 0.5) # Zoom in
-        
-        # 2. Real vs Imaginary (The 90 deg shift)
-        ax[1].plot(t, np.real(analytic_sig), 'b', label='Real (Original)')
-        ax[1].plot(t, np.imag(analytic_sig), 'orange', label='Imag (Hilbert)')
-        ax[1].set_title("Analytic Components (Real vs Imag)")
-        ax[1].legend(loc='upper right')
-        ax[1].set_xlim(0, 0.1) # Zoom in more
-        
-        # 3. Instantaneous Frequency
-        ax[2].plot(t[1:], inst_freq, 'purple')
-        ax[2].set_title("Instantaneous Frequency")
-        ax[2].set_ylabel("Frequency (Hz)")
-        ax[2].set_xlabel("Time (s)")
-        
-        st.pyplot(fig2)
+    ax[0].set_title("Instantaneous Amplitude extraction")
+    ax[0].legend(loc='upper right')
+    ax[0].set_xlim(0, 0.5) # Zoom in
+    ax[0].grid(True, alpha=0.3)
+    
+    # 2. Real vs Imaginary (The 90 deg shift)
+    ax[1].plot(t, np.real(analytic_sig), 'b', label='Real (Original)')
+    ax[1].plot(t, np.imag(analytic_sig), 'orange', label='Imag (Hilbert)')
+    ax[1].set_title("Analytic Components (Real vs Imag)")
+    ax[1].legend(loc='upper right')
+    ax[1].set_xlim(0, 0.1) # Zoom in more
+    ax[1].grid(True, alpha=0.3)
+    
+    # 3. Instantaneous Frequency
+    ax[2].plot(t[1:], inst_freq, 'purple')
+    ax[2].set_title("Instantaneous Frequency")
+    ax[2].set_ylabel("Frequency (Hz)")
+    ax[2].set_xlabel("Time (s)")
+    ax[2].grid(True, alpha=0.3)
+    
+    # Adjust y-limits for chirp to see the sweep clearly
+    if sig_type == "Chirp":
+        ax[2].set_ylim(0, max(f_start, f_end) * 1.5)
+    
+    st.pyplot(fig2)
 
 # ==============================================================================
 # TAB 3: SSB MODULATION
